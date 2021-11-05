@@ -1,34 +1,54 @@
 #!/bin/bash
 
-read_html () {
-  wget $1
-  while read -r html_code; do 
-	 if [$html_code == *'href="http"'*]
-
-  if [ -e "$1" ]
+read_html_save () {
+  if wget --spider $1 2>/dev/null;
     then
-      count=0
-      while read -r file_contents; do
-        let  "count+=1"
-        echo "$count $file_contents"
-      done < "$1"
+	wget -qO index.html $1
     else
-	echo "This file does not exist"
+        echo "This URL does not exist"
+	exit 1
+  fi	
+  if [ -e "./index.html" ]
+    then
+      grep -Po '(?<=href=")http[^"]*' ./index.html > page_links
+      while read -r link; do
+	      echo $link
+      done < "page_links"
+    else	
+	echo "Error locating index.html or could not write"
+  fi
+};
+
+read_html () {
+  if wget --spider $1 2>/dev/null;
+    then
+	wget -qO index.html $1
+    else
+        echo "This URL does not exist"
+	exit 1
+  fi	
+  if [ -e "./index.html" ]
+    then
+      grep -Po '(?<=href=")http[^"]*' ./index.html
+    else
+	echo "Error locating index.html or could not write"
   fi
 };
 
 
-while getopts ":n: :h" option; do
+counter=0
+while getopts ":f: :h" option; do
   case "${option}" in
     f)
-	FILE="${OPTARG}"
-	read_file_with_num "$FILE"
+	URL="${OPTARG}"
+	read_html_save "$URL"
 	let "counter+=1"
 	;;
     h)
         echo "There are two options"
-	echo "[No Option]: Prints the file contents" 
-	echo "-n : List with numbers"
+	echo "Usage: display_link [option] [link]"
+	echo "[No Option]: Prints the links in console from a link" 
+	echo "-f : Saves the links to a file in the directory called page_links"
 	echo "-h : prints help"
 	let "counter+=1"
 	;;
@@ -41,7 +61,7 @@ done
 
 if [ $counter == 0 ]
 then
-	read_file "$1"
+	read_html "$1"
 else
 	exit 0
 fi

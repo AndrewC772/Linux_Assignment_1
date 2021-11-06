@@ -6,6 +6,7 @@ read_html_save () {
 	wget -qO index.html $1
     else
         echo "This URL does not exist"
+	echo "Usage: display_links [URL]"
 	exit 1
   fi	
   if [ -e "./index.html" ]
@@ -24,7 +25,8 @@ read_html () {
     then
 	wget -qO index.html $1
     else
-        echo "This URL does not exist"
+        echo "This URL does not exist or is invalid"
+	echo "Usage: display_links [URL]"
 	exit 1
   fi	
   if [ -e "./index.html" ]

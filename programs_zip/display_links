@@ -1,0 +1,67 @@
+#!/bin/bash
+
+read_html_save () {
+  if wget --spider $1 2>/dev/null;
+    then
+	wget -qO index.html $1
+    else
+        echo "This URL does not exist"
+	exit 1
+  fi	
+  if [ -e "./index.html" ]
+    then
+      grep -Po '(?<=href=")http[^"]*' ./index.html > page_links
+      while read -r link; do
+	      echo $link
+      done < "page_links"
+    else	
+	echo "Error locating index.html or could not write"
+  fi
+};
+
+read_html () {
+  if wget --spider $1 2>/dev/null;
+    then
+	wget -qO index.html $1
+    else
+        echo "This URL does not exist"
+	exit 1
+  fi	
+  if [ -e "./index.html" ]
+    then
+      grep -Po '(?<=href=")http[^"]*' ./index.html
+    else
+	echo "Error locating index.html or could not write"
+  fi
+};
+
+
+counter=0
+while getopts ":f: :h" option; do
+  case "${option}" in
+    f)
+	URL="${OPTARG}"
+	read_html_save "$URL"
+	let "counter+=1"
+	;;
+    h)
+        echo "There are two options"
+	echo "Usage: display_link [option] [link]"
+	echo "[No Option]: Prints the links in console from a link" 
+	echo "-f : Saves the links to a file in the directory called page_links"
+	echo "-h : prints help"
+	let "counter+=1"
+	;;
+    *) 
+        echo "Invalid selection $1"
+	exit 1
+	;;
+    esac
+done
+
+if [ $counter == 0 ]
+then
+	read_html "$1"
+else
+	exit 0
+fi
